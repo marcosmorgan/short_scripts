@@ -1,0 +1,58 @@
+---
+title: "Get RNA Arrays annotation data from Bioconductor"
+output: html_document
+---
+
+###I want to get for example the gene symbols for each probe in a given array.
+
+
+I will use the [MOE430A](https://bioconductor.org/packages/release/data/annotation/html/moe430a.db.html) and [MOE430B](https://bioconductor.org/packages/release/data/annotation/html/moe430b.db.html) chip annotations from bioconductor.
+
+
+You can get them using the following code, after uncommenting:
+
+```{r}
+#source("https://bioconductor.org/biocLite.R")
+#biocLite("moe430a.db")
+#biocLite("moe430b.db")
+```
+
+Now we load the libraries and get the data
+
+```{r, message = FALSE, warning=FALSE}
+library(moe430a.db)
+library(moe430b.db)
+library(dplyr)
+```
+
+According to the [documentation](https://bioconductor.org/packages/release/data/annotation/manuals/moe430a.db/man/moe430a.db.pdf) we need to do the following:
+
+```{r}
+mapped_probes_a.keys <- mappedkeys(moe430aREFSEQ)
+mapped_probes_a.df   <- as.data.frame(moe430aREFSEQ[mapped_probes_a.keys])
+mapped_probes_b.keys <- mappedkeys(moe430bREFSEQ)
+mapped_probes_b.df   <- as.data.frame(moe430bREFSEQ[mapped_probes_b.keys])
+mapped_probes.df     <- unique(bind_rows(mapped_probes_a.df, mapped_probes_b.df))
+rm(mapped_probes_a.keys, mapped_probes_b.keys, mapped_probes_a.df, mapped_probes_b.df)
+```
+
+The data is in the mapped_probes.df dataframe
+
+```{r, echo=FALSE}
+head(mapped_probes.df, n=10)
+```
+
+May be we would like to save the data frame in a .csv file
+
+```{r}
+write.csv(mapped_probes.df, "mapped_probes_df.csv")
+```
+
+So that we can open it later
+
+```{r}
+again_mapped_probes.df <- read.csv("mapped_probes_df.csv")
+```
+
+###Done!
+
