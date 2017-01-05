@@ -1,0 +1,57 @@
+---
+title: "Untitled"
+output: html_document
+---
+
+Need to load the libraries 
+```{r}
+library(dplyr)
+library(ggplot2)
+```
+
+Set working directory
+```{r}
+setwd("/Users/Marcos/Dropbox/Lab/Marcos_files/Scripts_Data/scripts/github/violin_plots/")
+```
+
+Need to load the data
+```{r}
+probes_clusters     <- read.csv("clusters.csv")
+probes_transcripts  <- read.csv("mapped_probes_df.csv")
+transcripts_lengths <- read.csv("the_lengths.csv")
+```
+
+Merge the dataframes
+```{r}
+colnames(transcripts_lengths) <- c("drop","accession","length")
+probes_lengths <- merge(probes_transcripts, transcripts_lengths, by = "accession")
+probes_lengths <- probes_lengths %>% group_by(probe_id) %>% summarise(mean(unique(length)))
+rm(probes_transcripts, transcripts_lengths)
+
+colnames(probes_clusters) <- c("drop", "probe_id", "cluster")
+probes_lengths_cluster <- merge(probes_lengths, probes_clusters, by = "probe_id" )
+probes_lengths_cluster <- mutate(probes_lengths_cluster, number = as.integer(sub("Cluster", "", cluster)))
+lengths_cluster <- probes_lengths_cluster[, !colnames(probes_lengths_cluster) %in% c("drop", "cluster","probe_id")]
+colnames(lengths_cluster) <- c("length", "cluster")
+lengths_cluster <- subset(lengths_cluster, cluster %in% c("2", "5", "3", "1", "4", "19", "14", "9"))
+clusters <- cluster = as.factor(lengths_cluster$cluster)
+lengths_cluster <- data_frame(length = lengths_cluster$length, cluster = as.factor(lengths_cluster$cluster))
+levels(lengths_cluster$cluster)
+lengths_cluster$cluster = factor(lengths_cluster$cluster, levels = c("2", "5", "3", "1", "4", "19", "14", "9"))
+```
+
+Calculate a median length for probe
+```{r}
+
+plot <- ggplot(lengths_cluster, aes(factor(cluster), length)) + geom_boxplot() +
+  scale_y_continuous(limits = c(0,5000))
+plot
+```
+
+Save files
+```{r}
+
+ggsave("oocytes.pdf", plot)
+```
+
+
