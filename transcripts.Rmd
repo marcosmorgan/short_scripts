@@ -1,0 +1,70 @@
+---
+title: "Get transcripts data from Bioconductor"
+output: html_document
+---
+
+###In this example, I will extract the 3'UTR length from all mouse RefSeq transcripts
+
+I will use the [GenomicRanges](https://bioconductor.org/packages/release/bioc/html/GenomicRanges.html) library from Bioconductor to extract the 3'UTRs information.
+Also, I will use the [dplyr](https://cran.rstudio.com/web/packages/dplyr/vignettes/introduction.html) library to handle the data.
+
+```{r, message=FALSE, warning=FALSE}
+library(GenomicFeatures)
+library(dplyr)
+```
+
+Now, we need to load the data.
+
+```{r}
+#refSeq             <- makeTxDbFromUCSC(genom="mm10",tablename="refGene")
+```
+
+Since the function does not work at the moment (apparently something was changed in UCSC table),
+I will load the data from a file. You download the data for the example by clicking [here](https://github.com/marcosmorgan/transcripts/raw/master/mm10_refseq.sqlite).
+
+```{r}
+refseq             <- loadDb("mm10_refseq.sqlite")
+```
+
+Now we get the 3'UTRs
+
+```{r, warning=FALSE}
+threeUTRs          <- threeUTRsByTranscript(refseq, use.names=TRUE)
+length_threeUTRs   <- width(ranges(threeUTRs))
+```
+
+We put it all together in a dataframe
+
+```{r}
+the_lengths        <- as.data.frame(length_threeUTRs)
+the_lengths        <- the_lengths %>% group_by(group, group_name) %>% summarise(sum(value))
+the_lengths        <- unique(the_lengths[,c("group_name", "sum(value)")])
+colnames(the_lengths) <- c("RefSeq Transcript", "3' UTR Length")
+```
+
+The data is in the the_lengths data frame
+
+```{r, echo=FALSE}
+head(the_lengths, n=10)
+```
+
+We can save the data for later
+
+```{r}
+write.csv(the_lengths, "the_lengths.csv")
+```
+
+And we can get it back
+
+```{r}
+again <- read.csv("the_lengths.csv")
+```
+
+###Done!
+
+
+
+
+
+
+
