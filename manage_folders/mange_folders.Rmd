@@ -1,0 +1,35 @@
+---
+title: "Untitled"
+author: "Marcos Morgan"
+date: "1/5/2017"
+output: html_document
+---
+
+
+Create Folders 
+
+Set WD
+```{r}
+
+```
+
+Define days
+```{r}
+
+```
+
+Define directory structure
+```{r}
+
+```
+
+Create directories
+```{r}
+
+```
+
+Create also .txt files
+```{r}
+
+```
+
