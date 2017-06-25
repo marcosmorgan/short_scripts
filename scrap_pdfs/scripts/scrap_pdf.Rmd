@@ -1,0 +1,43 @@
+---
+title: "PDF_scrap"
+author: "Marcos Morgan"
+date: "25/06/2017"
+output: html_document
+---
+
+Load libraries
+```{r}
+library(pdftools)
+require(knitr)
+```
+
+Set Working directory
+```{r}
+opts_knit$set(root.dir = '')
+```
+
+```{r}
+pdf_file <- "../data/Macosko_2015.pdf"
+info <- pdf_info(pdf_file)
+#head(info)
+```
+
+```{r}
+text <- pdf_text(pdf_file)
+show(text)
+```
+
+```{r}
+fonts <- pdf_fonts(pdf_file)
+show(fonts)
+```
+
+```{r}
+files <- pdf_attachments(pdf_file)
+show(files)
+```
+
+```{r}
+
+```
+
