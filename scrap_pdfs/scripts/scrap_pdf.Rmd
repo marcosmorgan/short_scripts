@@ -48,6 +48,9 @@ show(split_page)
 ```
 
 ```{r}
-
+comments <- split_page %>% filter(grepl("Page", a)) %>% select(-b) %>% mutate(a = as.integer(gsub("Page", "", a))) %>%
+                           rename(Page = a) %>% unite(comment, c(c, d, e), sep = " ") %>% 
+                           mutate(comment = gsub("NA", "", comment))
+show(comments)
 ```
 
