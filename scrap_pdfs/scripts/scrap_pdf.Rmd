@@ -54,3 +54,24 @@ comments <- split_page %>% filter(grepl("Page", a)) %>% select(-b) %>% mutate(a 
 show(comments)
 ```
 
+Import bibliography
+```{r, message=FALSE, warning=FALSE}
+library(RefManageR)
+```
+
+```{r}
+biblio <- ReadBib("/Users/Marcos/Dropbox/Lab/Marcos_files/Scripts_Data/scripts/short_scripts/scrap_pdfs/data/collections/collection.bib")
+#biblio
+biblio[1]$author
+biblio[1]$abstract
+biblio[1]$title
+biblio[1]$file
+```
+
+```{r}
+
+```
+
+
+
+
