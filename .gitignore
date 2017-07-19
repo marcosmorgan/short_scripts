@@ -3,3 +3,6 @@ data
 .DS_Store
 */data/*
 */results/*
+*/archive/*
+*/views/*
+.Rproj.user
