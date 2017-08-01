@@ -1,0 +1,73 @@
+---
+title: "Untitled"
+author: "Marcos Morgan"
+date: "1/5/2017"
+output: html_document
+---
+
+<!-- Load libraries --> 
+```{r, message=FALSE, warning=FALSE,  echo=FALSE}
+library(dplyr)
+library(knitr)
+library(bizdays)
+```
+
+<!-- Clean --> 
+```{r, echo=FALSE}
+rm(list=ls())
+```
+
+<!-- Set the working directory -->
+Set working directory
+```{r setup}
+opts_knit$set(root.dir = "../")
+```
+
+Read templates
+```{r}
+reagents <- read.csv2("data/update_reagents.csv") 
+samples  <- read.csv2("data/update_samples.csv")
+```
+
+Create Folders 
+
+Define days
+```{r}
+ X <- seq( as.Date("2017/8/1", format="%Y/%m/%d"), as.Date("2017/8/31", format="%Y/%m/%d"),"days")
+ X <- seq( as.Date("2017/8/1", format="%Y/%m/%d"), as.Date("2017/8/31", format="%Y/%m/%d"), by=1)
+weekdays.X <- X[ ! weekdays(X) %in% c("Saturday", "Sunday") ]  
+str(weekdays.X)
+```
+
+Create month folder
+```{r}
+setwd(file.path("results", "2017-08-01"))
+
+for(d in c(1:length(weekdays.X))){
+  show(as.character(weekdays.X[d]))
+  day <- as.character(weekdays.X[d])
+  
+  day <- as.character(weekdays.X[d])
+  dir.create(file.path("../", day))
+  setwd(file.path("../", day))
+  write.csv2(reagents, paste(day, "reagents.csv", sep = "_"), row.names = FALSE)
+  write.csv2(samples, paste(day, "samples.csv", sep = "_"), row.names = FALSE)
+  file.create(paste(day, "_done.txt", sep = "_"))
+}
+```
+
+Define directory structure
+```{r}
+
+```
+
+Create directories
+```{r}
+
+```
+
+Create also .txt files
+```{r}
+
+```
+
