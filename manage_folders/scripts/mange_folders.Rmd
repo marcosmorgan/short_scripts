@@ -10,6 +10,7 @@ output: html_document
 library(dplyr)
 library(knitr)
 library(bizdays)
+library(lubridate)
 ```
 
 <!-- Clean --> 
@@ -33,15 +34,25 @@ Create Folders
 
 Define days
 ```{r}
- X <- seq( as.Date("2017/8/1", format="%Y/%m/%d"), as.Date("2017/8/31", format="%Y/%m/%d"),"days")
- X <- seq( as.Date("2017/8/1", format="%Y/%m/%d"), as.Date("2017/8/31", format="%Y/%m/%d"), by=1)
-weekdays.X <- X[ ! weekdays(X) %in% c("Saturday", "Sunday") ]  
-str(weekdays.X)
+#Give day of a month
+
+give_month_days <- function(year, month){
+
+    X <- seq( as.Date("2017", format="%Y"), as.Date("2025", format="%Y"), by=1)
+    X <- X[unlist(lapply(X, function(x) month(x) == month & year(x) == year))] 
+    weekdays.X <- X[ ! weekdays(X) %in% c("Saturday", "Sunday") ]  
+    return(weekdays.X)
+}
+
+weekdays.X <- give_month_days(2017, 9)
+show(weekdays.X)
+
 ```
+
 
 Create month folder
 ```{r}
-setwd(file.path("results", "2017-08-01"))
+setwd(file.path("results", "2017-09-01"))
 
 for(d in c(1:length(weekdays.X))){
   show(as.character(weekdays.X[d]))
