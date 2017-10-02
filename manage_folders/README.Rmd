@@ -1,0 +1,14 @@
+---
+title: "README"
+author: "Marcos Morgan"
+date: "10/2/2017"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+### This script is to create lab-book folders for the different days of the week
+
+
