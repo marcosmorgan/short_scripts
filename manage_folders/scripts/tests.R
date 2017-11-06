@@ -2,6 +2,8 @@ library(testthat)
 source("helper_functions.R")
 #test_dir("manage_folders/scripts/")
 
+source("helper_functions.R")
+
 context("Create folders")
 
 test_that("give_month_days ", {

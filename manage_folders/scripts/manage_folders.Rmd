@@ -3,7 +3,17 @@ title: "Untitled"
 author: "Marcos Morgan"
 date: "1/5/2017"
 output: html_document
+params:
+  year:
+    value: 2018
+  month:
+    value: all
 ---
+
+Remove data
+```{r}
+rm(list=ls()[!ls() %in% c("params")])
+```
 
 <!-- Load libraries --> 
 ```{r, message=FALSE, warning=FALSE,  echo=FALSE}
@@ -11,67 +21,24 @@ library(dplyr)
 library(knitr)
 library(bizdays)
 library(lubridate)
-```
 
-<!-- Clean --> 
-```{r, echo=FALSE}
-rm(list=ls())
-```
-
-<!-- Set the working directory -->
-Set working directory
-```{r setup}
-opts_knit$set(root.dir = "../")
-#source("scripts/helper_functions.R")
+source("helper_functions.R")
 ```
 
 Read templates
 ```{r}
-reagents <- read.csv2("data/update_reagents.csv") 
-samples  <- read.csv2("data/update_samples.csv")
+show(getwd())
+reagents <- read.csv2("../data/update_reagents.csv") 
+samples  <- read.csv2("../data/update_samples.csv")
 ```
-
-Create Folders 
-
-Define days
-```{r}
-
-```
-
 Create month folder
 ```{r}
-
-give_month_files <- function(year, month, reagents_table, samples_table){
-  
-  year_month <- paste(year, month, sep="-")
-  month_days <- give_month_days(year, month)
-  
-  day <- as.character(month_days[1])
-  dir.create(file.path("results", year_month, day))
-  setwd(file.path("results", year_month, day))
-  write.csv2(reagents_table, paste(day, "reagents.csv", sep = "_"), row.names = FALSE)
-  write.csv2(samples_table, paste(day, "samples.csv", sep = "_"), row.names = FALSE)
-  file.create(paste(day, "_done.txt", sep = "_"))
-  
-  for(d in c(2:length(month_days))){
-    show(as.character(month_days[d]))
-    day <- as.character(month_days[d])
-    dir.create(file.path("../", day))
-    setwd(file.path("../", day))
-    write.csv2(reagents_table, paste(day, "reagents.csv", sep = "_"), row.names = FALSE)
-    write.csv2(samples_table, paste(day, "samples.csv", sep = "_"), row.names = FALSE)
-    file.create(paste(day, "_done.txt", sep = "_"))
-    
-    #setwd(file.path("../"))  
-  }
-}
-
-give_month_files(2017, 10, reagents, samples)
+give_month_files(2017, 12, reagents, samples)
 ```
 
 Define directory structure
 ```{r}
-
+give_year_files(2018, reagents, samples)
 ```
 
 Create directories

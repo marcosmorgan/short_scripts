@@ -1,3 +1,7 @@
+library(testthat)
+#library(dplyr)
+#test_file("clusters/scripts/test_clusters.R")
+
 
 give_month_days <- function(year, month){
   
@@ -5,6 +9,40 @@ give_month_days <- function(year, month){
   X <- X[unlist(lapply(X, function(x) month(x) == month & year(x) == year))] 
   weekdays.X <- X[ ! weekdays(X) %in% c("Saturday", "Sunday") ]  
   return(weekdays.X)
+}
+
+give_month_files <- function(year, month, reagents_table, samples_table){
+  
+  year_month <- paste(year, month, sep="-")
+  month_days <- give_month_days(year, month)
+  
+  day <- as.character(month_days[1])
+  dir.create(file.path("../results", year_month, day))
+  setwd(file.path("../results", year_month, day))
+  write.csv2(reagents_table, paste(day, "reagents.csv", sep = "_"), row.names = FALSE)
+  write.csv2(samples_table, paste(day, "samples.csv", sep = "_"), row.names = FALSE)
+  file.create(paste(day, "_done.txt", sep = "_"))
+  
+  for(d in c(2:length(month_days))){
+    day <- as.character(month_days[d])
+    dir.create(file.path("../", day))
+    setwd(file.path("../", day))
+    write.csv2(reagents_table, paste(day, "reagents.csv", sep = "_"), row.names = FALSE)
+    write.csv2(samples_table, paste(day, "samples.csv", sep = "_"), row.names = FALSE)
+    file.create(paste(day, "_done.txt", sep = "_"))
+    
+  }
+
+  setwd(file.path("../../"))
+
+}
+
+give_year_files <- function(year, reagents, samples){
+  year_char <- as.character(year)
+  for(i in 1:12){
+    dir.create(file.path(paste("../results/", year_char, "-", as.character(i), sep="")))
+    give_month_files(year, i, reagents, samples)
+  } 
 }
 
 
