@@ -1,0 +1,60 @@
+PATH: '../'
+EXPERIMENT: 'leukemia'
+
+samples:
+#  sample_1:
+#    type: "wt"
+#    r1: "HYGMHAFXX_KK1_18s000076-1-1_Ivanova_lane118s000076_1_sequence.txt.gz"
+#    r2: "HYGMHAFXX_KK1_18s000076-1-1_Ivanova_lane118s000076_2_sequence.txt.gz"
+#  sample_2: 
+#    type: "wt"
+#    r1: "HYGMHAFXX_KK2_18s000077-1-1_Ivanova_lane118s000077_1_sequence.txt.gz"
+#    r2: "HYGMHAFXX_KK2_18s000077-1-1_Ivanova_lane118s000077_2_sequence.txt.gz"
+#  sample_3: 
+#    type: "wt"
+#    r1: "HYGMHAFXX_KK3_18s000078-1-1_Ivanova_lane118s000078_1_sequence.txt.gz"
+#    r2: "HYGMHAFXX_KK3_18s000078-1-1_Ivanova_lane118s000078_2_sequence.txt.gz"
+#  sample_4: 
+#    type: "ko"
+#    r1: "HYGMHAFXX_KK4_18s000079-1-1_Ivanova_lane118s000079_1_sequence.txt.gz"
+#    r2: "HYGMHAFXX_KK4_18s000079-1-1_Ivanova_lane118s000079_2_sequence.txt.gz"
+#  sample_5: 
+#    type: "ko"
+#    r1: "HYGMHAFXX_KK7_18s000485-1-1_Ivanova_lane118s000485_1_sequence.txt.gz"
+#    r2: "HYGMHAFXX_KK7_18s000485-1-1_Ivanova_lane118s000485_2_sequence.txt.gz"
+  sample_6: 
+    type: "ko"
+    r1: "HYGMHAFXX_KK6_18s000081-1-1_Ivanova_lane118s000081_1_sequence.txt.gz"
+    r2: "HYGMHAFXX_KK6_18s000081-1-1_Ivanova_lane118s000081_2_sequence.txt.gz"
+
+# compounds:
+#  test:
+#  MM6:
+#  NB4:
+#  NOMO-1:
+#  MA9.3ITD:
+#  MA9.3RAS:
+#  sample_1_macs:
+#  sample_2_macs:
+#  sample_3_macs:
+#  all:
+
+#species: 'mouse'
+#species: 'human'
+
+#external:
+#  human: 
+#    sizes: '../../data/hg38.chrom.sizes' 
+    #gtf: '../../data/Homo_sapiens.GRCh38.91.gtf'
+    #gtf: '../views/leukemia/annotation/gencode.v27.basic.annotation_up.gtf ../views/leukemia/annotation/gencode.v27.basic.annotation_down.gtf ../views/leukemia/annotation/gencode.v27.basic.annotation_unchanged.gtf'
+#    gtf: '../views/leukemia/annotation/gencode.v27.basic.annotation_up_old.gtf ../views/leukemia/annotation/gencode.v27.basic.annotation_down_old.gtf ../views/leukemia/annotation/gencode.v27.basic.annotation_unchanged_old.gtf'
+    
+#  mouse: 
+#    sizes: '../../data/mm10.chrom.sizes' 
+    #gtf: '../../data/Mus_musculus.GRCm38.91_.gtf'
+    #gtf: '../views/leukemia/annotation/Mus_musculus.GRCm38.91_down.gtf ../views/leukemia/annotation/Mus_musculus.GRCm38.91_unchanged.gtf ../views/leukemia/annotation/Mus_musculus.GRCm38.91_up.gtf'
+    #gtf: '../views/leukemia/archive/Mus_musculus.GRCm38.91_down_.gtf ../views/leukemia/archive/Mus_musculus.GRCm38.91_unchanged_.gtf ../views/leukemia/archive/Mus_musculus.GRCm38.91_up_.gtf'
+    #gtf: '../views/leukemia/annotation/gencode.vM16.basic.annotation_up.gtf ../views/leukemia/annotation/gencode.vM16.basic.annotation_down.gtf ../views/leukemia/annotation/gencode.vM16.basic.annotation_unchanged.gtf'
+    #gtf: '../views/leukemia/archive/Mus_musculus.GRCm38.91_down.gtf ../views/leukemia/archive/Mus_musculus.GRCm38.91_unchanged.gtf ../views/leukemia/archive/Mus_musculus.GRCm38.91_up.gtf'
+#    gtf: '../views/leukemia/annotation/Mus_musculus.GRCm38.91_up_old.gtf ../views/leukemia/annotation/Mus_musculus.GRCm38.91_down_old.gtf ../views/leukemia/annotation/Mus_musculus.GRCm38.91_unchanged_old.gtf'
+

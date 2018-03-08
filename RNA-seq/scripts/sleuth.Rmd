@@ -1,0 +1,56 @@
+---
+title: "Untitled"
+author: "Marcos Morgan"
+date: "3/5/2018"
+output: html_document
+---
+
+```{r}
+library(sleuth)
+library(rhdf5)
+```
+```{r}
+s2c <- read.csv2("../data/leukemia/metadata.csv", stringsAsFactors = FALSE)
+```
+
+
+```{r}
+so <- sleuth_prep(s2c, extra_bootstrap_summary = TRUE)
+```
+
+```{r}
+mart <- biomaRt::useMart(biomart = "ENSEMBL_MART_ENSEMBL",
+  dataset = "mmusculus_gene_ensembl",
+  host = 'ensembl.org')
+t2g <- biomaRt::getBM(attributes = c("ensembl_transcript_id", "ensembl_gene_id",
+    "external_gene_name"), mart = mart)
+t2g <- dplyr::rename(t2g, target_id = ensembl_transcript_id,
+  ens_gene = ensembl_gene_id, ext_gene = external_gene_name)
+```
+
+```{r}
+so <- sleuth_prep(s2c, target_mapping = t2g)
+```
+
+```{r}
+so <- sleuth_fit(so, ~condition, 'full')
+```
+
+```{r}
+so <- sleuth_fit(so, ~1, 'reduced')
+```
+
+```{r}
+so <- sleuth_lrt(so, 'reduced', 'full')
+```
+
+```{r}
+sleuth_table <- sleuth_results(so, 'reduced:full', 'lrt', show_all = FALSE)
+sleuth_significant <- dplyr::filter(sleuth_table, qval <= 0.05)
+head(sleuth_significant, 20)
+```
+
+```{r}
+sleuth_live(so)
+```
+
