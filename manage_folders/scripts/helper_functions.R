@@ -7,18 +7,20 @@ library(lubridate)
 #test_file("clusters/scripts/test_clusters.R")
 
 
-give_month_days <- function(year, month){
+give_month_days <- function(year, month, weekends){
   
   X <- seq( as.Date("2017", format="%Y"), as.Date("2025", format="%Y"), by=1)
   X <- X[unlist(lapply(X, function(x) month(x) == month & year(x) == year))] 
-  weekdays.X <- X[ ! weekdays(X) %in% c("Saturday", "Sunday") ]  
-  return(weekdays.X)
+  if(weekends){
+  X <- X[ ! weekdays(X) %in% c("Saturday", "Sunday") ] 
+  }
+  return(X)
 }
 
-give_month_files <- function(year, month, tables){
+give_month_files <- function(year, month, tables, weekends){
   
   year_month <- paste(year, month, sep="-")
-  month_days <- give_month_days(year, month)
+  month_days <- give_month_days(year, month, weekends)
   
   day <- as.character(month_days[1])
   dir.create(file.path("../results", year_month, day), recursive=T)
@@ -50,11 +52,11 @@ give_month_files <- function(year, month, tables){
 
 }
 
-give_year_files <- function(year, tables){
+give_year_files <- function(year, tables, weekends){
   year_char <- as.character(year)
   for(i in 1:12){
     dir.create(file.path(paste("../results/", year_char, "-", as.character(i), sep="")))
-    give_month_files(year, i, tables)
+    give_month_files(year, i, tables, weekends)
   } 
 }
 

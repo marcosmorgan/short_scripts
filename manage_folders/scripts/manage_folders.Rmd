@@ -37,12 +37,12 @@ tables <- list.files(path = "../data/")
 
 Create month folder
 ```{r}
-give_month_files(2017, 12, tables)
+#give_month_files(2017, 12, tables, F)
 ```
 
 Define directory structure
 ```{r}
-give_year_files(2018, tables)
+give_year_files(2018, tables, F)
 ```
 
 Create directories
