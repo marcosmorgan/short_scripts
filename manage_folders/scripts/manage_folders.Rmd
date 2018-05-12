@@ -28,17 +28,21 @@ source("helper_functions.R")
 Read templates
 ```{r}
 show(getwd())
-reagents <- read.csv2("../data/update_reagents.csv") 
-samples  <- read.csv2("../data/update_samples.csv")
+
+tables <- list.files(path = "../data/")
+
+#reagents <- read.csv2("../data/update_reagents.csv") 
+#samples  <- read.csv2("../data/update_samples.csv")
 ```
+
 Create month folder
 ```{r}
-give_month_files(2017, 12, reagents, samples)
+give_month_files(2017, 12, tables)
 ```
 
 Define directory structure
 ```{r}
-give_year_files(2018, reagents, samples)
+give_year_files(2018, tables)
 ```
 
 Create directories
