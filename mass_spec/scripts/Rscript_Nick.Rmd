@@ -1,0 +1,107 @@
+---
+title: "Nick IPMS"
+output: html_notebook
+---
+
+#load libraries
+```{r, include=FALSE}
+library("dplyr")
+library('tidyr')
+library("ggplot2")
+library('extrafont')
+```
+
+#replicate 1
+```{r}
+replicate1 <- read.csv("./Nick/Tables/replicate1.csv", header = TRUE, sep = ",")
+
+UniprotID <- read.csv("Uniprot_IDs.csv", header = TRUE, sep = ",")
+REP1 <- replicate1
+REP1$t.test.difference <- as.numeric(REP1$t.test.difference)
+REP1 <- mutate(REP1, Protein.ID = gsub("_MOUSE", "",gsub(";.*", "",REP1$Majority.protein.IDs)))
+REP1$Protein.ID <- gsub("sp\\|", "", REP1$Protein.ID)
+REP1$Protein.ID <- gsub("tr\\|", "", REP1$Protein.ID)
+REP1$Protein.ID <- gsub("\\|.*", "", REP1$Protein.ID)
+REP1$Protein.ID <- gsub("-.*", "", REP1$Protein.ID)
+REP1 <- left_join(REP1, UniprotID, by = "Protein.ID")
+REP1$Protein <- as.character(REP1$Protein)
+REP1$Protein[is.na(REP1$Protein)] <- as.character(REP1$Protein.ID[is.na(REP1$Protein)])
+
+cutoff_enrichment <- 1.41
+cutoff_pvalue <- 1
+
+PROT1_CONs <- REP1 %>% filter(t.test.difference > cutoff_enrichment, t.test.significance > cutoff_pvalue, substr(Protein,1,4) == "CON_" | pathway == "contaminant")
+PROT1_IPs <- REP1 %>% filter(t.test.difference > cutoff_enrichment, t.test.significance > cutoff_pvalue, !Protein %in% c(PROT1_CONs$Protein))
+PROT1_rest <- filter(REP1, !Protein %in% c(PROT1_CONs$Protein , PROT1_IPs$Protein))
+
+ggplot(REP1, aes(x= t.test.difference, y = t.test.significance)) +
+  theme(text = element_text(family = "Helvetica", size = 10, face = "bold"), axis.text = element_text(face = "bold", angle = 0), axis.title = element_text(face = "bold"), legend.position = "none") +
+  geom_point(PROT1_rest, mapping = aes(), colour = "slategray3", alpha = 0.5) +
+  geom_point(PROT1_CONs, mapping = aes(), colour = "gray3", alpha = 0.2) +
+  geom_point(PROT1_IPs, mapping = aes(), fill = "black", colour = "Black",  alpha = 0.7, shape = 21, size = 2) +
+  labs(x = "ENRICHMENT (log2(LFQ(bait)/LFQ(control))", y = "CONFIDENCE (-log10(p-value)") +
+  annotate(geom = "text", x = -2.0, y = 3.8, label = "IP: Nick Replicate 1\nn=2") +
+  geom_text(data = PROT1_IPs, mapping = aes(label = Protein),hjust=-0.06, vjust=1.2, units = "pt", alpha = 0.5) +
+  theme_classic() 
+ggsave("./NICK/Replicate1.pdf", width = 18, height = 12, units = "cm")
+```
+
+#Replicate 2
+```{r}
+replicate2 <- read.csv("./Nick/Tables/replicate2.csv", header = TRUE, sep = ",")
+
+UniprotID <- read.csv("Uniprot_IDs.csv", header = TRUE, sep = ",")
+REP2 <- replicate2
+REP2$t.test.difference <- as.numeric(REP2$t.test.difference)
+REP2 <- mutate(REP2, Protein.ID = gsub("_MOUSE", "",gsub(";.*", "",REP2$Majority.protein.IDs)))
+REP2$Protein.ID <- gsub("sp\\|", "", REP2$Protein.ID)
+REP2$Protein.ID <- gsub("tr\\|", "", REP2$Protein.ID)
+REP2$Protein.ID <- gsub("\\|.*", "", REP2$Protein.ID)
+REP2$Protein.ID <- gsub("-.*", "", REP2$Protein.ID)
+REP2 <- left_join(REP2, UniprotID, by = "Protein.ID")
+REP2$Protein <- as.character(REP2$Protein)
+REP2$Protein[is.na(REP2$Protein)] <- as.character(REP2$Protein.ID[is.na(REP2$Protein)])
+
+cutoff_enrichment <- 1.41
+cutoff_pvalue <- 1
+
+PROT2_CONs <- REP2 %>% filter(t.test.difference > cutoff_enrichment, t.test.significance > cutoff_pvalue, substr(Protein,1,4) == "CON_" | pathway == "contaminant")
+PROT2_IPs <- REP2 %>% filter(t.test.difference > cutoff_enrichment, t.test.significance > cutoff_pvalue, !Protein %in% c(PROT2_CONs$Protein))
+PROT2_rest <- filter(REP2, !Protein %in% c(PROT2_CONs$Protein , PROT2_IPs$Protein))
+
+ggplot(REP2, aes(x= t.test.difference, y = t.test.significance)) +
+  theme(text = element_text(family = "Helvetica", size = 10, face = "bold"), axis.text = element_text(face = "bold", angle = 0), axis.title = element_text(face = "bold"), legend.position = "none") +
+  geom_point(PROT2_rest, mapping = aes(), colour = "slategray3", alpha = 0.5) +
+  geom_point(PROT2_CONs, mapping = aes(), colour = "gray3", alpha = 0.2) +
+  geom_point(PROT2_IPs, mapping = aes(), fill = "black", colour = "Black",  alpha = 0.7, shape = 21, size = 2) +
+  labs(x = "ENRICHMENT (log2(LFQ(bait)/LFQ(control))", y = "CONFIDENCE (-log10(p-value)") +
+  annotate(geom = "text", x = -2.0, y = 3.8, label = "IP: Nick Replicate 1\nn=2") +
+  geom_text(data = PROT2_IPs, mapping = aes(label = Protein),hjust=-0.06, vjust=1.2, units = "pt", alpha = 0.5) +
+  theme_classic() 
+ggsave("./NICK/Rplicate2.pdf", width = 18, height = 12, units = "cm")
+```
+
+#extracting high confidence hits
+```{r}
+cutoff_enrichment <- 2
+cutoff_pvalue <- 1.41
+
+#filter enriched proteins
+PROT1_CONS <-   REP1 %>% filter(t.test.difference > cutoff_enrichment, t.test.significance > cutoff_pvalue, substr(Protein,1,4) == "CON_" | pathway == "contaminant")
+PROT1_interactors <- REP1 %>% filter(t.test.difference > cutoff_enrichment & t.test.significance > cutoff_pvalue & !Protein %in% c(PROT1_CONS$Protein))
+
+PROT2_CONS <-   REP2 %>% filter(t.test.difference > cutoff_enrichment, t.test.significance > cutoff_pvalue, substr(Protein,1,4) == "CON_" | pathway == "contaminant")
+PROT2_interactors <- REP2 %>% filter(t.test.difference > cutoff_enrichment & t.test.significance > cutoff_pvalue & !Protein %in% c(PROT2_CONS$Protein))
+
+
+
+#select
+
+interactors_rep1 <- PROT1_interactors %>% select(Protein, Protein.ID, Gene, pathway, Majority.protein.IDs, Protein.IDs, Enrichment.log2 = t.test.difference, Confidence.neglog10pvalue = t.test.significance) %>% mutate(Condition = "Replicate 1")
+
+interactors_rep2 <- PROT2_interactors %>% select(Protein, Protein.ID, Gene, pathway, Majority.protein.IDs, Protein.IDs, Enrichment.log2 = t.test.difference, Confidence.neglog10pvalue = t.test.significance) %>% mutate(Condition = "Replicate 2")
+
+
+interactors_Nick <- rbind(interactors_rep1, interactors_rep2)
+write.csv(interactors_Nick, file = "./Nick/interactors_Nick.csv", row.names = FALSE)
+```

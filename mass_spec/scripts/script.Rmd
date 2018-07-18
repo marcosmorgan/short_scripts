@@ -1,0 +1,45 @@
+---
+title: "Untitled"
+output: html_document
+params:
+  parameter_1:
+    value: leukemia
+  parameter_2:
+    value: control
+---
+
+<!-- Load libraries -->
+```{r}
+library(dplyr)
+library(tidyr)
+```
+
+<!-- Clean --> 
+```{r, echo=FALSE}
+rm(list= ls()[!ls() %in% c("params")])
+```
+
+<!-- Load data --> 
+```{r}
+parameter_1   <- params$parameter_1
+parameter_2   <- params$parameter_2
+
+path          <- paste("../data/", experiment, "/", sep="")
+res_path      <- paste("../results/", experiment, "/", sep = "") 
+view_path     <- paste("../views/", experiment, "/", sep = "") 
+
+dir.create(file.path(path))
+dir.create(file.path(res_path))
+dir.create(file.path(view_path))
+
+source("helper_functions.R")
+```
+
+```{r}
+
+```
+
+```{r}
+
+```
+
