@@ -1,54 +1,115 @@
-import os
-import sys
-cwd = os.getcwd()
-sys.path.append(cwd + "/scripts")
-from configuration.experiment_1 import *
+configfile: "configuration.yaml"
 
 
 
-# Parsing parameters to load to load to R function
-# PARAMETER_1 = ["paremeter_1"]
-# PARAMETER_2 = "parameter_2"
+# rule all:
+#   input:
+#     #expand("../views/{experiment}/exomePeaks/{sample}/peak.bed", experiment = config["EXPERIMENT"], sample = config["SampleList"]),
+#     expand("../views/{experiment}/MACS2/{sample}/NA_treat_pileup.bdg", experiment = config["EXPERIMENT"], sample = config["SampleList"])
 # 
-# replicates = ""
-# for one_parameter_1 in PARAMETER_1[:-1]:
-#   parameter_1s = '\"' + one_parameter_1 + '\",' + parameter_1s
-# parameter_1s = parameter_1s + '\"' + PARAMETER_1[-1] + '\"'
+# rule exomePeaks_peak_call:
+#   input:
+#     input = lambda wildcards: config["SampleList"][wildcards.sample]["input"],
+#     ip = lambda wildcards: config["SampleList"][wildcards.sample]["ip"]
+#   output:
+#     "../views/{experiment}/exomePeaks/{sample}/peak.bed"
+#   params:
+#     gtf = lambda wildcards: config["SampleList"][wildcards.sample]["gtf"]
+#   shell:
+#     "Rscript -e 'rmarkdown::render(\"exomePeaks.Rmd\", params = list( \
+#     gtf    = \"{params.gtf}\", \
+#     experiment = \"{wildcards.experiment}\", \
+#     sample = \"{wildcards.sample}\", \
+#     input  = \"{input.input}\", \
+#     ip     = \"{input.ip}\" \
+#     ))'"
 # 
-# parameter_2 = '\"' + PARAMETER_2 + '\"'
+# rule MACS2_peak_call:
+#   input:
+#     input = lambda wildcards: config["SampleList"][wildcards.sample]["input"],
+#     ip = lambda wildcards: config["SampleList"][wildcards.sample]["ip"]
+#   output:
+#     "../views/{experiment}/MACS2/{sample}/NA_treat_pileup.bdg"
+#   params:
+#     g = lambda wildcards: config["SampleList"][wildcards.sample]["g"],
+#     output = "../views/{experiment}/MACS2/{sample}/"
+#   message:
+#     """
+#     Running rule MACS2 peak call
+#     sample {wildcards.sample}
+#     input {input.input} {input.ip}
+#     output {output}
+#     This is the output directory: {params.output}
+#     """
+#   shell:
+#     """
+#     macs2 callpeak -t {input.ip} \
+#     -c {input.input} \
+#     -g {params.g} \
+#     -B \
+#     --outdir {params.output}
+#     """
+    
+# ADATE  = config["ADATE"]
+# genotypes = config["genotypes"]
+# PPYTHON = config["PPYTHON"]
+# lanes = config["lanes"]
 # 
 # rule all:
 #   input:
-#     expand("../views/{experiment}/IP{replicates}.bed", replicates = PARAMETER_1, experiment = EXPERIMENT),
-#     expand("../views/{experiment}/myBigWig{replicates}.bw", replicates = PARAMETER_1, experiment = EXPERIMENT),
+#     expand("../data/read_gels/{adate}_genotyping/gel_loading_results.csv", adate = ADATE),
+#     expand("../results/{adate}/togeno_{adate}.csv", adate = ADATE)    
 # 
-# rule create_gtfs:
+# rule load_colony:
 #   input:
-#     expand("../{experiment}/data/{affy_}", affy_ = AFFY, experiment = EXPERIMENT)
+#     "../data/Breeding_population.xls"
 #   output:
-#     "../views/{experiment}/Mus_musculus.GRCm38.91_up.gtf",
-#     "../views/{experiment}/Mus_musculus.GRCm38.91_unchanged.gtf",
-#     "../views/{experiment}/Mus_musculus.GRCm38.91_down.gtf"
+#     "../views/colony.csv",
+#     "../views/litters.csv",
+#     "../views/matings.csv",
 #   shell:
-#     "Rscript -e 'rmarkdown::render(\"Create_gtfs.Rmd\", params = list(replicates = list(" + affy + ")))'"
+#     "Rscript -e 'rmarkdown::render(\"colony.Rmd\")'"
 # 
-# rule do_bedMerge:
+# rule run_genotype:
 #   input:
-#     expand("../views/{experiment}/exomePeaks_views/{compounds}/peak.bed", experiment = EXPERIMENT, compounds = COMPOUNDS)
+#     "../views/colony.csv",
+#     "../views/litters.csv",
+#     "../views/matings.csv",
 #   output:
-#     "../views/{experiment}/exomePeaks_views/all/peak.bed"
+#     "../results/{adate}/togeno_{adate}.csv",
+#   params:
+#     ignore = 'as.vector(' + config["IGNORE"] + ')' 
+#   message:
+#     """
+#     Running rule run_genotype
+#     input files: {input}
+#     output files: {output}
+#     parameters: {params}
+#     wildcards: {wildcards}
+#     """
 #   shell:
-#     "cat {input} | sort -k1,1 -k2,2n | mergeBed > {output}"
-#     
-# rule plot_profile_all:
+#     "Rscript -e 'rmarkdown::render(\"genotype.Rmd\", \
+#      params = list(adate = \"{wildcards.adate}\", \
+#                   ignore = {params.ignore}))'"
+# 
+# #Rscript -e 'rmarkdown::render("genotype.Rmd", params = list(adate = "2017-11-23", ignore = "this"))'
+# 
+# rule run_gels:
 #   input:
-#     expand("../views/{experiment}/compute_matrixes/matrixScaledRegions_all.mat.gz", experiment = EXPERIMENT)
+#     "../data/read_gels/{adate}_genotyping/gel_loading_results.csv"
 #   output:
-#     "../results/{experiment}/results_profile_all.pdf"
+#     "../data/read_gels/{adate}_genotyping/{adate}_genotyping_{a_genotype}.pdf"
 #   shell:
-#     "python_env/bin/plotProfile -m {input} "
-#     "--startLabel Start_Codon --endLabel Stop_Codon -out {output}"
-
-
-
-
+#     PPYTHON + "read_gels.py"
+# 
+# rule run_load_results:
+#   input:
+#     "../data/read_gels/{adate}_genotyping/gel_loading_results.csv"
+#   output:
+#     "../results/{adate}/togeno_{adate}_res.csv"
+#   params:
+#     ignore = 'as.vector(' + config["IGNORE"] + ')' 
+#   shell:
+#     "Rscript -e 'rmarkdown::render(\"load_results.Rmd\", \
+#      params = list(adate = \"{wildcards.adate}\", \
+#                   ignore = {params.ignore}))'"

@@ -1,0 +1,51 @@
+---
+title: "Untitled"
+output: html_document
+params:
+  mass_spec_data:
+    value: ../../../../../molecular_biology/mass_spec/leukemia/original_data/proteingroups_filtered.txt
+  experiment:
+    value: leukemia
+---
+
+<!-- Load libraries -->
+```{r}
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+```
+
+<!-- Clean --> 
+```{r, echo=FALSE}
+rm(list= ls()[!ls() %in% c("params")])
+source("helper_functions.R")
+```
+
+```{r}
+mass_spec <- readRDS(file=paste("../views/", params$experiment, 
+                                "/mass_spec.Rda", sep=""))
+
+affy <- read.csv2(paste("../../../arrays/results/" , params$experiment, 
+                        "/final_results_R.csv", sep=""), sep = "\t",
+                   stringsAsFactors = FALSE) %>%
+                  #This should will be deprecates
+                   rename(logFC = WT.F2_KO.logFC,
+                          adj.P.Val = WT.F2_KO.adj.P.Val) %>%
+                   mutate(logFC = as.numeric(logFC),
+                          adj.P.Val = as.numeric(adj.P.Val)) %>%
+                   select(ID.Symbol, logFC, adj.P.Val)
+```
+
+```{r}
+merge <- left_join(mass_spec, affy, by=c("Protein.IDs" = "ID.Symbol")) %>% 
+         rowwise() %>% filter(!is.na(logFC)) 
+```
+
+```{r}
+plot <- ggplot(merge, aes(x=change, y=logFC)) + geom_point() 
+
+plot
+```
+
+
+
