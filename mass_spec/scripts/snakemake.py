@@ -1,5 +1,40 @@
-configfile: "configuration.yaml"
+configfile: "configuration/configuration.yml"
 
+rule all:
+  input:
+    expand("../views/{experiment}/scatter_plot.Rda",
+            experiment = config["experiment"])
+
+rule import_mass_spec_data:
+  input:
+    expand("../data/{experiment}/metadata.txt", experiment = config["experiment"])
+  output:
+    "../views/{experiment}/mass_spec.Rda"
+  params:
+    mass_spec_data = config["mass_spec_data"]
+  shell:
+    "Rscript -e 'rmarkdown::render(\"script.Rmd\", params = list( \
+    experiment = \"{wildcards.experiment}\", \
+    mass_spec_data = \"{params.mass_spec_data}\" \
+    ))'"
+
+rule merge_mass_spec_affy:
+  input:
+    expand("../views/{experiment}/mass_spec.Rda", experiment = config["experiment"])
+  output:
+    "../views/{experiment}/scatter_plot.Rda"
+  params:
+    change_a = config["change_a"],
+    significance_a = config["significance_a"],
+    change_b = config["change_b"],
+    significance_b = config["significance_b"]
+  shell:
+    "Rscript -e 'rmarkdown::render(\"mass_spec_affy.Rmd\", params = list( \
+    change_a = \"{params.change_a}\", \
+    significance_a = \"{params.significance_a}\", \
+    change_b = \"{params.change_b}\", \
+    significance_b = \"{params.significance_b}\" \
+    ))'"
 
 
 # rule all:
