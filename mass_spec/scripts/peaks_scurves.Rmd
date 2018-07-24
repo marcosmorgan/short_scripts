@@ -1,0 +1,85 @@
+---
+title: "Untitled"
+output: html_document
+params:
+  experiment:
+    value: leukemia
+  sample:
+    value: von_kriegsheim
+  path_peak:
+    value: ../../../peaks/gene_body/views/leukemia/intersection/NOMO1_MA93ITD_sample1_sample2_sample3_inter_given
+  significance:
+    value: 25
+---
+
+<!-- Load libraries -->
+```{r}
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+```
+
+<!-- Clean --> 
+```{r, echo=FALSE}
+rm(list= ls()[!ls() %in% c("params")])
+source("helper_functions.R")
+```
+
+```{r}
+mass_spec <- readRDS(file=paste("../views/", params$experiment, "/", 
+                                params$sample, 
+                                "/mass_spec.Rda", sep="")) %>%
+                  rename(change       = change,
+                         significance = q_value,
+                         label = Protein.IDs) %>%
+                  select(-significance)
+
+peak_data <- read.csv2(params$path_peak, stringsAsFactors = FALSE) %>%
+                  rename(label = symbol)
+```
+
+```{r}
+selected <- peak_data %>% 
+            filter(species == "mouse", common_species == 3) %>%
+            mutate(qval = as.numeric(qval)) %>%
+            arrange(desc(qval)) %>% 
+            filter(qval > params$significance) %>% 
+            dplyr::select(label) 
+
+mid <- peak_data %>% 
+            filter(species == "mouse", common_species == 3) %>%
+            mutate(qval = as.numeric(qval)) %>%
+            arrange(desc(qval)) %>% 
+            filter(qval <= params$significance) %>% 
+            dplyr::select(label)
+```
+
+```{r}
+ms_selected     <- selected %>% left_join(mass_spec) %>% arrange(change) %>% 
+                      mutate(rank = percent_rank(change)) %>%
+                      mutate(type = "selected") %>% unique() %>%
+                      filter(!is.na(change)) 
+ms_mid          <- mid %>% left_join(mass_spec) %>% arrange(change) %>% 
+                      mutate(rank = percent_rank(change)) %>%
+                      mutate(type = "mid") %>% unique()%>%
+                      filter(!is.na(change)) 
+ms_not_selected <- mass_spec %>% anti_join(selected) %>% anti_join(mid) %>%
+                      arrange(change) %>% 
+                      mutate(rank = percent_rank(change)) %>%
+                      mutate(type = "rest") %>% unique()%>%
+                      filter(!is.na(change)) 
+data_plot <- bind_rows(ms_selected, ms_not_selected, ms_mid) 
+
+data_plot$type <- as.factor(data_plot$type)
+```
+
+```{r}
+saveRDS(data_plot, file=paste("../views/", params$experiment, 
+                          "/", params$sample, "/s_curves.Rda", sep=""))
+```
+
+```{r}
+
+```
+
+

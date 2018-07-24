@@ -1,0 +1,106 @@
+---
+title: "Untitled"
+output: html_document
+params:
+  experiment:
+    value: leukemia
+  sample:
+    value: von_kriegsheim
+  change_a:
+    value: 0.001
+  significance_a:
+    value: 0.05
+  change_b:
+    value: 0.001
+  significance_b:
+    value: 0.05
+  significance_c:
+    value: 25
+  path_peak:
+    value: ../../../peaks/gene_body/views/leukemia/intersection/NOMO1_MA93ITD_sample1_sample2_sample3_inter_given
+---
+
+<!-- Load libraries -->
+```{r}
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+```
+
+<!-- Clean --> 
+```{r, echo=FALSE}
+rm(list= ls()[!ls() %in% c("params")])
+source("helper_functions.R")
+```
+
+```{r}
+mass_spec <- readRDS(file=paste("../views/", params$experiment, "/", 
+                                params$sample, 
+                                "/mass_spec.Rda", sep="")) %>%
+                  rename(change_a       = change,
+                         significance_a = q_value,
+                         label = Protein.IDs)
+
+affy <- read.csv2(paste("../../../arrays/results/" , params$experiment, 
+                        "/final_results_R.csv", sep=""), sep = "\t",
+                   stringsAsFactors = FALSE) %>%
+                   #This should will be deprecates
+                   rename(change_b       = WT.F2_KO.logFC,
+                          significance_b = WT.F2_KO.adj.P.Val,
+                          label = ID.Symbol) %>%
+                   mutate(change_b = -1 * as.numeric(change_b),
+                          significance_b = as.numeric(significance_b)) %>%
+                   select(label, change_b, significance_b)
+
+peak_data <- read.csv2(params$path_peak, stringsAsFactors = FALSE) %>%
+                  rename(label = symbol)
+```
+
+```{r}
+merge <- left_join(mass_spec, affy, by = "label") %>% 
+         rowwise() %>% filter(!is.na(change_b)) %>%
+         mutate(change_a_ = if_else(abs(change_a) > params$change_a, 1, 0),
+                significance_a_ = if_else(significance_a < 
+                                            params$significance_a, 1, 0),
+                change_b_ = if_else(abs(change_b) > params$change_b, 1, 0),
+                significance_b_ = if_else(significance_b < 
+                                            params$significance_b, 1, 0)
+                ) %>% 
+         mutate(group_a = change_a_ * significance_a_,
+                group_b = change_b_ * significance_b_) %>%
+         mutate(group_a_b = group_a * group_b) %>%
+         select(-change_a_, -significance_a_, -change_b_, -significance_b_) %>%
+         unique()
+
+```
+
+```{r}
+selected <- peak_data %>% 
+            filter(species == "mouse", common_species == 3) %>%
+            mutate(qval = as.numeric(qval)) %>%
+            arrange(desc(qval)) %>% 
+            filter(qval > params$significance_c) %>% 
+            dplyr::select(label) 
+```
+
+```{r}
+selected_merge <- selected %>% left_join(merge)
+```
+
+
+```{r}
+saveRDS(selected_merge, file=paste("../views/", params$experiment, 
+                          "/", params$sample, "/scatter_plot_selected.Rda", sep=""))
+```
+
+```{r}
+plot <- ggplot(selected_merge, aes(x=change_a, y=change_b)) + geom_point() 
+
+plot
+```
+
+```{r}
+
+```
+
+
