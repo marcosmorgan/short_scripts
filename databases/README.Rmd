@@ -1,0 +1,175 @@
+---
+title: "Downloading databases"
+author: "Marcos Morgan"
+date: "8/2/2018"
+runtime: shiny
+output: html_document
+bibliography: ../../papers/my_collection.bib
+---
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+library(shiny)
+library(rhandsontable)
+library(dplyr)
+library(citr)
+library(odbc)
+library(RMySQL)
+library(DBI)
+```
+
+```{r echo=FALSE}
+shinyUI(fluidPage(
+  textInput("caption", "Experiment:", "Give experiment"),
+  
+  verbatimTextOutput("value")
+))
+
+output$value <- renderText({ input$caption })
+```
+
+```{r echo=FALSE}
+DF <- read.csv("data/experiment_template.csv", stringsAsFactors = FALSE, sep=";")
+```
+
+```{r echo=FALSE}
+shinyUI(fluidPage(
+    sidebarLayout(
+      sidebarPanel(
+        wellPanel(
+          actionButton("save", "Save table")
+        )
+      ),
+      mainPanel(
+        rHandsontableOutput("hot")
+      )
+    )
+  ))
+```
+
+```{r echo=FALSE}
+values <- reactiveValues()
+
+    ## Handsontable
+    observe({
+      if (!is.null(input$hot)) {
+        DF = hot_to_r(input$hot)
+      } else {
+        if (is.null(values[["DF"]]))
+          DF <- DF
+        else
+          DF <- values[["DF"]]
+      }
+      values[["DF"]] <- DF
+    })
+
+    output$hot <- renderRHandsontable({
+      DF <- values[["DF"]]
+      if (!is.null(DF))
+        rhandsontable(DF, useTypes = as.logical(TRUE), stretchH = "all")
+    })
+    
+observeEvent(input$save, {
+      finalDF <- isolate(values[["DF"]])
+      saveRDS(finalDF, "views/table.rds")
+      dir.create(paste("views/", input$caption, "/", sep=""))
+      dir.create(paste("views/", input$caption, "/sending/", sep=""))
+      write.csv2(finalDF %>% select(sample, concentration, rin, volume),
+                 paste("views/", input$caption, "/sending/",
+                       input$caption, ".csv", sep=""),
+                 row.names = F)
+    })
+```
+
+
+#Introduction
+
+Steps to download databases from different sources
+
++ Rfam non-coding RNA
+
++ YYY
+
++ ZZZ
+
+## Rfam non-coding RNA
+
+```{r}
+mydb = dbConnect(MySQL(), user='rfamro', port=4497, dbname='Rfam', host='mysql-rfam-public.ebi.ac.uk')
+```
+
+```{bash eval=FALSE, include=FALSE}
+cd ../../../external_data/rfam_sequences/
+wget ftp://ftp.ebi.ac.uk/pub/databases/Rfam/CURRENT/fasta_files/* .
+```
+
+```{bash}
+cd ../../../external_data/rfam_sequences/
+gunzip *.gz
+cat *.fa > Rfam.fa
+```
+
+```{bash}
+cd ../../../external_data/rfam_sequences/
+awk 'BEGIN{RS=">"}NR>1{sub("\n","\t"); gsub("\n",""); print RS$0}' Rfam.fa | awk '!seen[$1]++' | awk -v OFS="\n" '{for(i=2;i<1;i++) head = head " " $i; print $1 " " head,$NF; head = ""}' > Rfam_unique.fa
+```
+
+```{bash}
+../../../basic_data_analysis/others/bin/esl-sfetch --index ../../../external_data/rfam_sequences/Rfam_unique.fa
+```
+
+A .sql file needs to be created
+
+with the following information
+
+---
+select concat(fr.rfamseq_acc,'/',fr.seq_start,'-',fr.seq_end)
+from full_region fr, genseq gs
+where gs.rfamseq_acc=fr.rfamseq_acc
+and fr.is_significant=1
+and fr.type='full'
+and gs.upid='UP000000589' -- mouse upid
+and gs.version=14.0;
+---
+
+Look for the upid for the species you need by looking a the dataframe upid_scientific_name
+
+```{r}
+con <- dbConnect(RMySQL::MySQL(), user='rfamro', port=4497, dbname='Rfam', host='mysql-rfam-public.ebi.ac.uk')
+dbListTables(con)
+
+```
+
+```{r}
+#upid_scientific_name <- dbReadTable(conn = con, name = 'genome') %>% 
+#  select("upid", "scientific_name") %>% unique()
+```
+
+```{bash}
+mysql -urfamro -hmysql-rfam-public.ebi.ac.uk -P4497 --skip-column-names --database Rfam < views/ncrna/mouse_ncrnas.sql > views/ncrna/accessions.txt
+```
+
+```{bash}
+../../../basic_data_analysis/others/bin/esl-sfetch -f ../../../external_data/rfam_sequences/Rfam_unique.fa views/ncrna/accessions.txt > results/ncrna/mouse_ncrnas.fa
+```
+
+Here is a table to link the different fasta files with a ncRNA family.
+
+```{r}
+#full_region <- dbReadTable(conn = con, name = 'full_region')
+#genseq <- dbReadTable(conn = con, name = 'genseq')
+#family <- dbReadTable(conn = con, name = 'family')
+```
+
+```{r}
+filtered_fr <- full_region %>% 
+  filter(is_significant == "1" & type == "full")
+filtered_gs <- genseq %>% filter(upid == "UP000000589", version == "14.0")
+
+fasta_header <- merge(filtered_fr, filtered_gs, by = c("rfamseq_acc")) %>% 
+  left_join(family, by=c("rfam_acc")) %>%
+  mutate(header = paste(rfamseq_acc, '/', seq_start,'-', seq_end, sep="")) %>%
+  select(header, rfam_id)
+```
+
+## YYY
+![](data/readme_data/filled_form.png)
