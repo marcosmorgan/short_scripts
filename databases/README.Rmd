@@ -152,6 +152,10 @@ mysql -urfamro -hmysql-rfam-public.ebi.ac.uk -P4497 --skip-column-names --databa
 ../../../basic_data_analysis/others/bin/esl-sfetch -f ../../../external_data/rfam_sequences/Rfam_unique.fa views/ncrna/accessions.txt > results/ncrna/mouse_ncrnas.fa
 ```
 
+```{r}
+
+```
+
 Here is a table to link the different fasta files with a ncRNA family.
 
 ```{r}
@@ -173,3 +177,47 @@ fasta_header <- merge(filtered_fr, filtered_gs, by = c("rfamseq_acc")) %>%
 
 ## YYY
 ![](data/readme_data/filled_form.png)
+
+
+Create Hisat2 index of fasta files
+
+```{bash}
+hisat2-build -f mouse_ncrnas.fa mouse_ncrnas
+```
+
+Programmatically download the GRCm38 fasta files
+
+```{bash}
+#wget ftp://ftp.ensembl.org/pub/release-68/fasta/mus_musculus/dna/Mus_musculus.GRCm38.68.dna.chromosome.*.fa.gz
+#gunzip *.gz
+```
+
+The GRCm38_RepeatMasker.gtf file was downloaded from UCSC table browser
+
+https://genome.ucsc.edu/cgi-bin/hgTables?hgsid=686151737_Lpt923s7prAa1ILzOI7ca1aNemt3&clade=mammal&org=Mouse&db=mm10&hgta_group=varRep&hgta_track=rmsk&hgta_table=0&hgta_regionType=genome&position=chr9%3A94870110-94870159&hgta_outputType=primaryTable&hgta_outFileName=
+
+
+
+
+The /path/to/fasta/files/DIRECTORY/ point to the file where the GRC38 fasta files where downloaded.
+
+```{bash}
+gffread GRCm38_RepeatMasker.gtf -g ../path/to/fasta/files/DIRECTORY/ -w GRCm38_RepeatMasker.fa
+```
+
+Create Hisat2 index of RepeatMasker fasta files
+
+```{bash}
+hisat2-build -f mouse_rmsk.fa mouse_rmsk
+```
+
+Ribosomial RNA was downloaded manually form https://www.arb-silva.de/download
+
+```{r}
+
+```
+
+
+
+
+
