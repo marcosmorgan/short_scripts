@@ -196,8 +196,7 @@ The GRCm38_RepeatMasker.gtf file was downloaded from UCSC table browser
 
 https://genome.ucsc.edu/cgi-bin/hgTables?hgsid=686151737_Lpt923s7prAa1ILzOI7ca1aNemt3&clade=mammal&org=Mouse&db=mm10&hgta_group=varRep&hgta_track=rmsk&hgta_table=0&hgta_regionType=genome&position=chr9%3A94870110-94870159&hgta_outputType=primaryTable&hgta_outFileName=
 
-
-
+![](data/readme_data/UCSC_rmsk.png)
 
 The /path/to/fasta/files/DIRECTORY/ point to the file where the GRC38 fasta files where downloaded.
 
@@ -213,11 +212,24 @@ hisat2-build -f mouse_rmsk.fa mouse_rmsk
 
 Ribosomial RNA was downloaded manually form https://www.arb-silva.de/download
 
-```{r}
+![](data/readme_data/Silva_first.png)
+![](data/readme_data/Silva_second.png)
 
+The sequences have Us instead of Ts so. This was done with the replace function of RStudio
+Then in SSU.fasta the following header had to be fixed again to U ">GU372691.7012.8881"
+And in TSU.fasta the following needed to be changed ">GU372691.11134.15878"
+
+Also downloaded from NCBI the sequence of 4.5S RNA
+
+Create an index for the ribosomial RNA
+```{bash}
+hisat2-build -f LSU.fasta,SSU.fasta,4.5S.fasta rRNA
 ```
 
-
+To inspect the index use
+```{bash}
+hisat2-inspect -s rRNA
+```
 
 
 
