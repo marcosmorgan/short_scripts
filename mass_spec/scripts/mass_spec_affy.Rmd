@@ -1,56 +1,50 @@
 ---
-title: "Untitled"
+title: "Pachytene TUTs Affy - Mass spec"
 output: html_document
 params:
   experiment:
-    value: leukemia
-  sample:
-    value: von_kriegsheim
+    value: 2018-09_pachytene_tuts
+  affy:
+    value: ../../../arrays/results/pachytene_tuts_single/ctrl_p-dcko_p/sic.Rda
   change_a:
-    value: 0.001
+    value: 25
   significance_a:
     value: 0.05
   change_b:
-    value: 0.001
+    value: 1
   significance_b:
-    value: 0.05
+    value: 0.01
 ---
 
 <!-- Load libraries -->
-```{r}
+```{r include=FALSE}
 library(dplyr)
 library(tidyr)
 library(ggplot2)
 ```
 
 <!-- Clean --> 
-```{r, echo=FALSE}
+```{r include=FALSE}
 rm(list= ls()[!ls() %in% c("params")])
 source("helper_functions.R")
 ```
 
-```{r}
-mass_spec <- readRDS(file=paste("../views/", params$experiment, "/", 
-                                params$sample, 
-                                "/mass_spec.Rda", sep="")) %>%
+```{r include=FALSE}
+mass_spec <- readRDS(file=paste("../projects/", params$experiment,
+                                "/views/mass_spec.Rda", sep="")) %>%
                   rename(change_a       = change,
                          significance_a = q_value,
                          label = Protein.IDs)
 
-affy <- read.csv2(paste("../../../arrays/results/" , params$experiment, 
-                        "/final_results_R.csv", sep=""), sep = "\t",
-                   stringsAsFactors = FALSE) %>%
-                   #This should will be deprecates
-                   rename(change_b       = WT.F2_KO.logFC,
-                          significance_b = WT.F2_KO.adj.P.Val,
-                          label = ID.Symbol) %>%
-                   mutate(change_b = -1 * as.numeric(change_b),
-                          significance_b = as.numeric(significance_b)) %>%
+sic      <- readRDS(file = params$affy) %>%
+                   mutate(change_b = -1 * as.numeric(change),
+                          significance_b = as.numeric(sig),
+                          label = ids) %>%
                    select(label, change_b, significance_b)
 ```
 
-```{r}
-merge <- left_join(mass_spec, affy, by = "label") %>% 
+```{r include=FALSE}
+merge <- left_join(mass_spec, sic, by = "label") %>% 
          rowwise() %>% filter(!is.na(change_b)) %>%
          mutate(change_a_ = if_else(abs(change_a) > params$change_a, 1, 0),
                 significance_a_ = if_else(significance_a < 
@@ -66,13 +60,39 @@ merge <- left_join(mass_spec, affy, by = "label") %>%
 
 ```
 
-```{r}
-saveRDS(merge, file=paste("../views/", params$experiment, 
-                          "/", params$sample, "/scatter_plot.Rda", sep=""))
+```{r include=FALSE}
+# saveRDS(merge, file=paste("../views/", params$experiment, 
+#                           "/", params$sample, "/scatter_plot.Rda", sep=""))
+
+write.csv2(merge, "../merge.csv")
 ```
 
-```{r}
-plot <- ggplot(merge, aes(x=change_a, y=change_b)) + geom_point() 
+####Significant Affy and Mass spec
+```{r echo=FALSE}
+merge <- merge %>% filter(change_a > -200)
+
+plot <- ggplot(merge, aes(x=change_a, y=change_b, color=group_a_b)) + geom_point() +
+     ylab("Affy fold change") + xlab("Mass spec fold change")
+
+plot
+```
+
+####Significant Affy 
+```{r echo=FALSE}
+merge <- merge %>% filter(change_a > -200)
+
+plot <- ggplot(merge, aes(x=change_a, y=change_b, color=group_b)) + geom_point() +
+     ylab("Affy fold change") + xlab("Mass spec fold change")
+
+plot
+```
+
+####Significant Mass Spec 
+```{r echo=FALSE}
+merge <- merge %>% filter(change_a > -200)
+
+plot <- ggplot(merge, aes(x=change_a, y=change_b, color=group_a)) + geom_point() +
+     ylab("Affy fold change") + xlab("Mass spec fold change")
 
 plot
 ```
@@ -80,5 +100,4 @@ plot
 ```{r}
 
 ```
-
 

@@ -1,0 +1,45 @@
+---
+title: "Untitled"
+output: html_document
+params:
+  mass_spec_data:
+    value: ../projects/2018-09_pachytene_tuts/data/E180918_candidates.csv
+  experiment:
+    value: 2018-09_pachytene_tuts
+  sample:
+    value: von_kriegsheim
+---
+
+<!-- Load libraries -->
+```{r}
+library(dplyr)
+library(tidyr)
+```
+
+```{r}
+file <- params$mass_spec_data
+```
+
+```{r}
+data <- read.csv2(file, stringsAsFactors = FALSE) %>% 
+  select("Qvalue", "X..Change", "Genes") %>%
+                       rename(q_value = !!names(.[1]),
+                              change  = !!names(.[2]),
+                              Protein.IDs = !!names(.[3])) %>%
+                       mutate(q_value = as.numeric(q_value),
+                              change  = -1 * as.numeric(change)) %>%
+                              # change  = as.numeric(change)) %>%
+                       rowwise() %>%
+                       # mutate(Protein.IDs = extract_genes(Protein.IDs)) %>%
+                       mutate(Protein.IDs = strsplit(Protein.IDs, ";")) %>%
+                       unnest(Protein.IDs) %>% unique()
+```
+
+```{r}
+saveRDS(data, file=paste("../projects/", params$experiment, "/views/mass_spec.Rda", sep=""))
+```
+
+```{r}
+
+```
+

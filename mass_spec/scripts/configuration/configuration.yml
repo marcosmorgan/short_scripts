@@ -1,0 +1,47 @@
+mass_spec_data: ../../../../../molecular_biology/mass_spec/leukemia/original_data/proteingroups_filtered.txt
+experiment: leukemia
+
+samples:
+  tania: 
+    data: ../../../../../molecular_biology/mass_spec/leukemia/tania/original_data/proteingroups_filtered.txt
+  von_kriegsheim:
+    data: ../../../../../molecular_biology/mass_spec/leukemia/tania/original_data/proteingroups_filtered.txt
+
+change_a: 0.001  # Mass spec change
+significance_a: 0.05 # Mass spec significance
+change_b: 0.001  # Affy change
+significance_b: 0.05 # Affy significance
+
+path: "../../../short_scripts/mass_spec/views/"
+alpha: "0.8"
+size: "0.5"
+y_axis_low: "-2"
+y_axis_high: "2"
+y_axis_sep: "1"
+x_axis_low: "-3"
+x_axis_high: "3"
+x_axis_sep: "1"
+x_label: "Protein levels fold change (log2)"
+y_label: "RNA levels fold change"
+
+##This is the array experiment differntially expressed genes
+#experiment: 
+#  first_experiment:
+#  second_experiment:
+#
+##This is a path somewhere
+#path: "../../../path/somewhere/"
+#
+##This is a parameter
+#probe_map: FALSE
+#
+##These are samples with parameters
+#SampleList:
+#  sample_a:
+#    gtf: "../../data/xxx_sample_a.gtf"
+#    ip: "../views/yyy_sample_a.bam"
+#    g: "hs"
+#  sample_b:
+#    gtf: "../../data/xxx_sample_b.gtf"
+#    ip: "../../views/yyy_sample_b.bam"
+#    g: "mm"
