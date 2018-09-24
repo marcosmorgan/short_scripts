@@ -3,7 +3,7 @@ title: "Untitled"
 output: html_document
 params:
   mass_spec_data:
-    value: ../projects/2018-09_pachytene_tuts/data/E180918_candidates.csv
+    value: ../projects/2018-09_pachytene_tuts/data/E180918_candidates_2.csv
   experiment:
     value: 2018-09_pachytene_tuts
   sample:
@@ -22,7 +22,7 @@ file <- params$mass_spec_data
 
 ```{r}
 data <- read.csv2(file, stringsAsFactors = FALSE) %>% 
-  select("Qvalue", "X..Change", "Genes") %>%
+  select("Qvalue", "AVG.Log2.Ratio", "Genes") %>%
                        rename(q_value = !!names(.[1]),
                               change  = !!names(.[2]),
                               Protein.IDs = !!names(.[3])) %>%

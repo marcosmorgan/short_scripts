@@ -7,7 +7,7 @@ params:
   affy:
     value: ../../../arrays/results/pachytene_tuts_single/ctrl_p-dcko_p/sic.Rda
   change_a:
-    value: 25
+    value: 1
   significance_a:
     value: 0.05
   change_b:
@@ -21,6 +21,7 @@ params:
 library(dplyr)
 library(tidyr)
 library(ggplot2)
+library(ggrepel)
 ```
 
 <!-- Clean --> 
@@ -46,10 +47,10 @@ sic      <- readRDS(file = params$affy) %>%
 ```{r include=FALSE}
 merge <- left_join(mass_spec, sic, by = "label") %>% 
          rowwise() %>% filter(!is.na(change_b)) %>%
-         mutate(change_a_ = if_else(abs(change_a) > params$change_a, 1, 0),
+         mutate(change_a_ = if_else(abs(change_a) > params$change_a, sign(change_a), 0),
                 significance_a_ = if_else(significance_a < 
                                             params$significance_a, 1, 0),
-                change_b_ = if_else(abs(change_b) > params$change_b, 1, 0),
+                change_b_ = if_else(abs(change_b) > params$change_b, sign(change_b), 0),
                 significance_b_ = if_else(significance_b < 
                                             params$significance_b, 1, 0)
                 ) %>% 
@@ -67,21 +68,13 @@ merge <- left_join(mass_spec, sic, by = "label") %>%
 write.csv2(merge, "../merge.csv")
 ```
 
-####Significant Affy and Mass spec
-```{r echo=FALSE}
-merge <- merge %>% filter(change_a > -200)
-
-plot <- ggplot(merge, aes(x=change_a, y=change_b, color=group_a_b)) + geom_point() +
-     ylab("Affy fold change") + xlab("Mass spec fold change")
-
-plot
-```
 
 ####Significant Affy 
 ```{r echo=FALSE}
 merge <- merge %>% filter(change_a > -200)
 
-plot <- ggplot(merge, aes(x=change_a, y=change_b, color=group_b)) + geom_point() +
+plot <- ggplot(merge, aes(x=change_a, y=change_b, color=group_b)) + 
+     geom_point(alpha = 0.5) +
      ylab("Affy fold change") + xlab("Mass spec fold change")
 
 plot
@@ -91,8 +84,121 @@ plot
 ```{r echo=FALSE}
 merge <- merge %>% filter(change_a > -200)
 
-plot <- ggplot(merge, aes(x=change_a, y=change_b, color=group_a)) + geom_point() +
+plot <- ggplot(merge, aes(x=change_a, y=change_b, color=group_a)) + 
+     geom_point(alpha = 0.5) +
      ylab("Affy fold change") + xlab("Mass spec fold change")
+
+plot
+```
+
+```{r}
+summary <- merge %>% group_by(group_a, group_b) %>%
+    summarise(count = n())
+```
+
+```{r}
+chi_table <- summary %>% spread(group_a, count)
+rownames(chi_table) <- chi_table$group_b
+chi_table <- chi_table %>% select(-group_b)
+chi_table[is.na(chi_table)] <- 0  
+chisq.test(chi_table) 
+```
+
+```{r}
+chi_table_positive <- summary %>% ungroup() %>%
+  mutate(group_a = ifelse(group_a > 0, 1, 0),
+         group_b = ifelse(group_b > 0, 1, 0)) %>%
+  group_by(group_a, group_b) %>% 
+  summarise(count = sum(count)) %>%
+  spread(group_a, count)
+rownames(chi_table_positive) <- chi_table_positive$group_b
+chi_table_positive <- chi_table_positive %>% select(-group_b)
+chi_table_positive[is.na(chi_table_positive)] <- 0  
+pval <- chisq.test(chi_table_positive)$p.value 
+```
+
+```{r}
+chi_table_negative <- summary %>% ungroup() %>%
+  mutate(group_a = ifelse(group_a < 0, 1, 0),
+         group_b = ifelse(group_b < 0, 1, 0)) %>%
+  group_by(group_a, group_b) %>% 
+  summarise(count = sum(count)) %>%
+  spread(group_a, count)
+rownames(chi_table_negative) <- chi_table_negative$group_b
+chi_table_negative <- chi_table_negative %>% select(-group_b)
+chi_table_negative[is.na(chi_table_negative)] <- 0  
+chisq.test(chi_table_negative) 
+```
+
+####Significant Affy and Mass spec
+```{r echo=FALSE}
+merge <- merge %>% filter(change_a > -200) %>% 
+  rowwise() %>% mutate(label_sig = ifelse(group_a_b == 1, label, ""))
+
+
+plot <- ggplot(merge, aes(x=change_a, y=change_b, color=group_a_b, label=label_sig)) + 
+     geom_point(alpha = 0.5) +
+     ylab("Affy fold change") + xlab("Mass spec fold change") + 
+     theme_classic() +
+     coord_cartesian(xlim=c(round(quantile(merge$change_a, 0.002), 0.1),
+                            round(quantile(merge$change_a, 0.999), 0.1)),
+                     ylim=c(round(quantile(merge$change_b, 0.0001)-1, 0.1),
+                            round(quantile(merge$change_b, 0.9999), 0.1))) +
+     scale_x_continuous(breaks = round(seq(quantile(merge$change_a, 0.002), 
+                                           quantile(merge$change_a, 0.999),
+                                           by = 1), 0.1), 
+                        expand = c(0,0)) +
+     scale_y_continuous(breaks = seq(round(quantile(merge$change_b, 0.0001)-1, 0.1), 
+                                           round(quantile(merge$change_b, 0.9999), 0.1),
+                                           by = 0.5), 
+                        expand = c(0,0)) +
+     geom_hline(yintercept=params$change_a, linetype="dashed") +
+     geom_hline(yintercept=-params$change_a, linetype="dashed") +
+     geom_vline(xintercept=params$change_b, linetype="dashed") +
+     geom_vline(xintercept=-params$change_b, linetype="dashed") +
+     theme(legend.position='none') +
+     geom_text_repel() +
+     annotate("text", label = paste("p value = ", as.character(signif(pval, 3)), sep=""), 
+                                    x = -2, y = 2, size = 4)
+      
+plot
+```
+
+```{r}
+saveRDS(merge, file=paste("../projects/", params$experiment, "/views/mass_spec_merge.Rda", sep=""))
+ggsave(paste("../projects/", params$experiment, "/results/x_y_plot_affy_mass_spec.pdf", sep=""), plot)
+```
+
+
+```{r echo=FALSE}
+merge <- merge %>% filter(change_a > -200) %>% 
+  rowwise() %>% mutate(label_sig = ifelse(group_a_b == 1, label, ""))
+
+
+plot <- ggplot(merge, aes(x=change_a, y=change_b, color=group_a_b)) + 
+     geom_point(alpha = 0.5) +
+     ylab("Affy fold change") + xlab("Mass spec fold change") + 
+     theme_classic() +
+     coord_cartesian(xlim=c(round(quantile(merge$change_a, 0.002), 0.1),
+                            round(quantile(merge$change_a, 0.999), 0.1)),
+                     ylim=c(round(quantile(merge$change_b, 0.0001)-1, 0.1),
+                            round(quantile(merge$change_b, 0.9999), 0.1))) +
+     scale_x_continuous(breaks = round(seq(quantile(merge$change_a, 0.002), 
+                                           quantile(merge$change_a, 0.999),
+                                           by = 1), 0.1), 
+                        expand = c(0,0)) +
+     scale_y_continuous(breaks = seq(round(quantile(merge$change_b, 0.0001)-1, 0.1), 
+                                           round(quantile(merge$change_b, 0.9999), 0.1),
+                                           by = 0.5), 
+                        expand = c(0,0)) +
+     geom_hline(yintercept=params$change_a, linetype="dashed") +
+     geom_hline(yintercept=-params$change_a, linetype="dashed") +
+     geom_vline(xintercept=params$change_b, linetype="dashed") +
+     geom_vline(xintercept=-params$change_b, linetype="dashed") +
+     theme(legend.position='none') +
+     annotate("text", label = paste("p value = ", as.character(signif(pval, 3)), sep=""), 
+                                    x = -2, y = 2, size = 4)
+      
 
 plot
 ```
