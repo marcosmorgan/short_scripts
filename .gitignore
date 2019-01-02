@@ -6,3 +6,8 @@ data
 */archive/*
 */views/*
 .Rproj.user
+**/projects/
+**/.Rhistory
+**/.snakemake/
+**/__pycache__/
+
