@@ -6,9 +6,7 @@ library(lubridate)
 #library(dplyr)
 #test_file("clusters/scripts/test_clusters.R")
 
-
 give_month_days <- function(year, month, weekends){
-  
   X <- seq( as.Date("2017", format="%Y"), as.Date("2025", format="%Y"), by=1)
   X <- X[unlist(lapply(X, function(x) month(x) == month & year(x) == year))] 
   if(weekends){
@@ -17,49 +15,33 @@ give_month_days <- function(year, month, weekends){
   return(X)
 }
 
-give_month_files <- function(year, month, tables, weekends){
-  
+give_month_files <- function(year, month, tables, weekends, path){
   year_month <- paste(year, month, sep="-")
   month_days <- give_month_days(year, month, weekends)
-  
   day <- as.character(month_days[1])
-  dir.create(file.path("../results", year_month, day), recursive=T)
-  setwd(file.path("../results", year_month, day))
-  #write.csv2(reagents_table, paste(day, "reagents.csv", sep = "_"), row.names = FALSE)
-  #write.csv2(samples_table, paste(day, "samples.csv", sep = "_"), row.names = FALSE)
+  first = getwd()
   
-  for(table in tables){
-    a_table <- read.csv2(paste("../../../data/", table, sep="")) 
-    write.csv2(a_table, paste(day, table, sep = "_"), row.names = FALSE)
-  }
-  file.create(paste(day, "_done.txt", sep = "_"))
-  
-  for(d in c(2:length(month_days))){
+  for(d in c(1:length(month_days))){
     day <- as.character(month_days[d])
-    dir.create(file.path("../", day))
-    setwd(file.path("../", day))
-    #write.csv2(reagents_table, paste(day, "reagents.csv", sep = "_"), row.names = FALSE)
-    #write.csv2(samples_table, paste(day, "samples.csv", sep = "_"), row.names = FALSE)
     for(table in tables){
-      a_table <- read.csv2(paste("../../../data/", table, sep="")) 
+      setwd(first)
+      a_table <- read.csv2(paste("../data/", table, sep=""))
+      dir.create(file.path(path, year_month, day), recursive=T)
+      setwd(file.path(path, year_month, day))
       write.csv2(a_table, paste(day, table, sep = "_"), row.names = FALSE)
     }
     file.create(paste(day, "_done.txt", sep = "_"))
-    
   }
-
-  setwd(file.path("../../"))
-
+  setwd(first)
 }
 
-give_year_files <- function(year, tables, weekends){
+give_year_files <- function(year, tables, weekends, path){
   year_char <- as.character(year)
   for(i in 1:12){
-    dir.create(file.path(paste("../results/", year_char, "-", as.character(i), sep="")))
-    give_month_files(year, i, tables, weekends)
+    dir.create(file.path(paste(path, "/", year_char, "-", as.character(i), sep="")))
+    give_month_files(year, i, tables, weekends, path)
   } 
 }
-
 
 #' Source the R code from an knitr file, optionally skipping plots
 #'

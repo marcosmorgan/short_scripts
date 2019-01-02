@@ -5,14 +5,18 @@ date: "1/5/2017"
 output: html_document
 params:
   year:
-    value: 2018
+    value: 2019
   month:
     value: all
+  project:
+    value: "2019-01_folders"
 ---
 
 Remove data
 ```{r}
 rm(list=ls()[!ls() %in% c("params")])
+path = paste("../projects/", params$project, "/results/", 
+             as.character(params$year), "/", sep="")
 ```
 
 <!-- Load libraries --> 
@@ -42,15 +46,11 @@ Create month folder
 
 Define directory structure
 ```{r}
-give_year_files(2018, tables, F)
-```
-
-Create directories
-```{r}
+getwd()
+give_year_files(params$year, tables, T, path)
 
 ```
 
-Create also .txt files
 ```{r}
 
 ```
