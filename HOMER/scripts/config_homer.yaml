@@ -1,0 +1,21 @@
+#path: "/Volumes/Promise_Pegasus/marcos_dropbox/Dropbox/Lab/Marcos_files/Scripts_Data/scripts/peaks/gene_body/views/"
+
+project:
+  peaks: '2019-02_leukemia'
+  homer: '2019-02_leukemia'
+
+peaks: 
+  caller: 'MACS2'
+  file: 'NA_peaks.narrowPeak'
+
+samples:
+#  sample1:
+#    reference: "../data/mm10_refseq.bed"
+#    chormosomes: "../data/mm10.chrom.sizes"
+#  sample2:
+#    reference: "../data/mm10_refseq.bed"
+#    chormosomes: "../data/mm10.chrom.sizes"
+  sample3:
+    reference: "../data/mm10_refseq.bed"
+    chormosomes: "../data/mm10.chrom.sizes"
+    genome: "mm10"

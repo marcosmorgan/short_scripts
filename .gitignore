@@ -10,4 +10,7 @@ data
 **/.Rhistory
 **/.snakemake/
 **/__pycache__/
-
+**/archive/*
+**/data/*
+**/results/*
+**/views/*
