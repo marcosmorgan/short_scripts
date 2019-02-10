@@ -2,56 +2,35 @@
 title: "Untitled"
 output: html_document
 params:
-  experiment:
-    value: leukemia
+  project:
+    value: 2019-02_leukemia
+  experiment_peak:
+    value: 2019-02_leukemia
   condition:
     value: control
   path_bed:
-    value: /Volumes/Promise_Pegasus/marcos_dropbox/Dropbox/Lab/Marcos_files/Scripts_Data/scripts/peaks/views/
+    value: ../../../peaks/gene_body/projects/
+  ensembl_biotype:
+    value: id_biotype.rds
 ---
 
 <!-- Load libraries -->
 ```{r}
 library(dplyr)
 library(tidyr)
-library(biomaRt)
 library(gdata)
 library(rtracklayer)
 library(TxDb.Mmusculus.UCSC.mm10.knownGene)
 library(GenomicRanges)
 library(ggplot2)
-```
-
-<!-- Clean --> 
-```{r, echo=FALSE}
-rm(list= ls()[!ls() %in% c("params")])
-```
-
-<!-- Load data --> 
-```{r}
-experiment    <- params$experiment
-condition     <- params$condition
-path_bed      <- params$path_bed
-
-path          <- paste("../data/", experiment, "/", sep="")
-res_path      <- paste("../results/", experiment, "/", sep = "") 
-view_path     <- paste("../views/", experiment, "/", sep = "") 
-
-dir.create(file.path(path))
-dir.create(file.path(res_path))
-dir.create(file.path(view_path))
 
 source("helper_functions.R")
 ```
 
 ```{r}
-peaks <- import(paste(path_bed, experiment, "/exomePeaks_views/", condition, "/peak.bed", sep=""), format="bed")
-features <- import(paste("../data/", experiment, "/Mus_musculus.GRCm38.91.gff3.gz", sep=""))
-```
-
-```{r}
-ensembl = useMart("ensembl", dataset = "mmusculus_gene_ensembl")
-ensembl_biotype <- getBM(attributes = c("ensembl_transcript_id", "gene_biotype"), mart = ensembl)
+peaks <- import(paste(params$path_bed, params$experiment_peak, 
+                      "/views/archive/exomePeaks_views/archive/", params$condition, "/peak.bed", sep=""), format="bed")
+features <- import("../data/Mus_musculus.GRCm38.91.gff3.gz")
 ```
 
 ```{r}
@@ -78,17 +57,21 @@ peaks_transcripts_data <- peaks_data %>% left_join(intersect_transcripts) %>%
 ```
 
 ```{r}
-short <- peaks_transcripts_data %>% dplyr::select(index_peaks, type, Parent) %>% unique()
+short <- peaks_transcripts_data %>% 
+  dplyr::select(index_peaks, type, Parent) %>% unique()
 short$Parent <- gsub("transcript:", "", as.character(short$Parent))
 short <- na.omit(short)
 ```
 
-```{r eval=FALSE, include=FALSE}
-protein_coding <- ensembl_biotype %>% filter(gene_biotype == "protein_coding") %>%
-                                      dplyr::select(-gene_biotype) %>% 
-                                      rename(Parent = ensembl_transcript_id) %>% unique()
+```{r}
+ensembl_biotype <- readRDS(paste("../projects/", params$project, "/data/", 
+                                 params$ensembl_biotype, sep=""))
+
+protein_coding <- ensembl_biotype %>% 
+  filter(gene_biotype == "protein_coding") %>% dplyr::select(-gene_biotype) %>% 
+                 dplyr::rename(Parent = ensembl_transcript_id) %>% unique()
 short <- protein_coding %>% left_join(short) 
-short <- na.omit(short)
+short <- na.omit(short) %>% ungroup()
 ```
 
 ```{r}
@@ -97,24 +80,14 @@ three <- short %>% filter(type == "three_prime_UTR") %>% dplyr::select(-type) %>
 five  <- short %>% filter(type == "five_prime_UTR") %>% dplyr::select(-type) %>% unique() 
 ```
 
-```{r eval=FALSE, include=FALSE}
-cds_three   <- intersect(cds, three) %>% dplyr::select(-Parent) %>% unique() %>% mutate(type = "Stop")
-cds_five    <- intersect(cds, five) %>% dplyr::select(-Parent) %>% unique() %>% mutate(type = "Start")
-three_five  <- intersect(three, five) %>% dplyr::select(-Parent) %>% unique() 
-three_five_cds  <- intersect(three, five, cds) %>% dplyr::select(-Parent) %>% unique()
+```{r}
+cds_three   <- dplyr::intersect(cds, three) %>% dplyr::select(-Parent) %>% unique() %>% mutate(type = "Stop")
+cds_five    <- dplyr::intersect(cds, five) %>% dplyr::select(-Parent) %>% unique() %>% mutate(type = "Start")
+three_five  <- dplyr::intersect(three, five) %>% dplyr::select(-Parent) %>% unique() 
+three_five_cds  <- dplyr::intersect(three, five, cds) %>% dplyr::select(-Parent) %>% unique()
 only_three  <- setdiff(three, cds) %>% dplyr::select(-Parent) %>% unique() %>% mutate(type = "3UTR")
 only_five   <- setdiff(five, cds) %>% dplyr::select(-Parent) %>% unique()  %>% mutate(type = "5UTR")
 only_cds    <- setdiff(cds, three) %>% setdiff(five) %>% dplyr::select(-Parent) %>% unique() %>% mutate(type = "CDS")
-```
-
-```{r}
-cds_three   <- intersect(cds, three)  %>% unique() %>% mutate(type = "Stop")
-cds_five    <- intersect(cds, five)  %>% unique() %>% mutate(type = "Start")
-three_five  <- intersect(three, five)  %>% unique() 
-three_five_cds  <- intersect(three, five, cds)  %>% unique()
-only_three  <- setdiff(three, cds)  %>% unique() %>% mutate(type = "3UTR")
-only_five   <- setdiff(five, cds)  %>% unique()  %>% mutate(type = "5UTR")
-only_cds    <- setdiff(cds, three) %>% setdiff(five) %>%  unique() %>% mutate(type = "CDS")
 ```
 
 ```{r}
@@ -130,11 +103,19 @@ p <- ggplot(all, aes(x=factor(1), fill=type))+
 
 p
 
-ggsave(paste("../results/", experiment, "/", condition, "_pie.pdf", sep="") , p)
-
+ggsave(paste("../projects/",  params$project, "/results/", params$condition, "_pie.pdf", sep="") , p)
 ```
 
 ```{r}
 
 ```
 
+```{r eval=FALSE, include=FALSE}
+cds_three   <- dplyr::intersect(cds, three)  %>% unique() %>% mutate(type = "Stop")
+cds_five    <- dplyr::intersect(cds, five)  %>% unique() %>% mutate(type = "Start")
+three_five  <- dplyr::intersect(three, five)  %>% unique() 
+three_five_cds  <- dplyr::intersect(three, five, cds) %>% unique() 
+only_three  <- setdiff(three, cds)  %>% unique() %>% mutate(type = "3UTR")
+only_five   <- setdiff(five, cds)  %>% unique()  %>% mutate(type = "5UTR")
+only_cds    <- setdiff(cds, three) %>% setdiff(five) %>%  unique() %>% mutate(type = "CDS")
+```

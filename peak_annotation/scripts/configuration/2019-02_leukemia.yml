@@ -1,0 +1,9 @@
+project: '2019-02_leukemia'
+
+condition: "control"
+
+path_bed: "/Volumes/Promise_Pegasus/marcos_dropbox/Dropbox/Lab/Marcos_files/Scripts_Data/scripts/peaks/views/"
+
+mart: "ensembl"
+dataset: "mmusculus_gene_ensembl"
+attributes: !r c('ensembl_transcript_id', 'gene_biotype')

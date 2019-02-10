@@ -1,0 +1,36 @@
+---
+title: "Untitled"
+author: "Marcos Morgan"
+date: "2/10/2019"
+output: html_document
+params:
+  project:
+    value: "2019-02_leukemia"
+  mart:
+    value: "ensembl"
+  dataset:
+    value: "mmusculus_gene_ensembl"
+  attributes:
+    value: !r c("ensembl_transcript_id", "gene_biotype")
+---
+
+<!-- Load libraries -->
+```{r}
+library(dplyr)
+library(tidyr)
+library(biomaRt)
+```
+
+```{r}
+ensembl = useMart(params$mart, dataset = params$dataset)
+ensembl_biotype <- getBM(attributes = params$attributes, mart = ensembl)
+```
+
+```{r}
+saveRDS(ensembl_biotype, paste("../projects/", params$project, "/data/id_biotype.rds", sep=""))
+```
+
+```{r}
+
+```
+
