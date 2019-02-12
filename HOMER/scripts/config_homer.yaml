@@ -15,7 +15,15 @@ samples:
 #  sample2:
 #    reference: "../data/mm10_refseq.bed"
 #    chormosomes: "../data/mm10.chrom.sizes"
-  sample3:
+#  sample3:
+#    reference: "../data/mm10_refseq.bed"
+#    chormosomes: "../data/mm10.chrom.sizes"
+#    genome: "mm10"
+#  samples123:
+#    reference: "../data/mm10_refseq.bed"
+#    chormosomes: "../data/mm10.chrom.sizes"
+#    genome: "mm10"
+  samples456:
     reference: "../data/mm10_refseq.bed"
     chormosomes: "../data/mm10.chrom.sizes"
     genome: "mm10"
